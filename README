@@ -1,0 +1,31 @@
+# Green Thumb Network
+Green Thumb Network includes the client and server connections for the Green Thumb project.
+Clients will receive plant growth information and send that data quickly to the server to be inserted
+into the database. The server will handle multiple connections at once (currently coded for 4) and input
+data quickly into the database for use by regression modeling and front end displays.
+
+client directory
+  clientClass.py
+    - Contains all the meat of the client.
+    - ipClient() creates a client object to hold all connection info
+    - Includes main functions to connect, authenticate, send, and receive messages with the server.
+  testClient.py
+    - Test client for the IP project, tests 100 input datasets with a second in between each input
+    - Client usage "python clientTest.py <config.json> <testdataset.json>"
+    - config.json contains server information clientId, serverAddr, serverPort, and serverKey
+      - clientId is a unique identifier to indicate which client we are, used as the key in the database
+      - serverAddr is the server address.
+      - serverPort is the port of the server.
+      - serverKey is a key from the server used to authenticate into the server.
+    - Client connects to server based on config file info
+    - Sends the serverKey first and expects an "authenticatesuccess" response
+    - Once authenticated we start sending each line of the json test dataset to be input into the database
+
+server directory
+  server.py
+    - Creates and upkeeps the server that clients connect to.
+    - When a client connects we create a new thread to handle the new client.
+    - Each thread pushes client input to the queue that is shared by each thread.
+    - The aggregate thread then consumes each item off the queue to insert into the database.
+    - When clients disconnect we cleanly close the thread so we don't end up with zombie threads.
+    - Included a disconnect command to close all threads at once.
